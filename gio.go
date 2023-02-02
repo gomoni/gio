@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// Copyright 2023 Michal Vyskocil. All rights reserved.
+
 // Package gio - generic io - is forked variant of Go stdlib io module.
 // Code is extended to be able to work on a slice of Go any type.
 package gio

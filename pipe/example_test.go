@@ -1,4 +1,8 @@
-package gio_test
+// Copyright 2023 Michal Vyskocil. All rights reserved.
+// Use of this source code is governed by a MIT
+// license that can be found in the LICENSE file.
+
+package pipe_test
 
 import (
 	"context"
@@ -10,7 +14,7 @@ import (
 	"strconv"
 	"strings"
 
-	. "github.com/gomoni/gio"
+	. "github.com/gomoni/gio/pipe"
 )
 
 // Lines sends each line to stdout
@@ -18,7 +22,7 @@ type Lines struct {
 	cat []string
 }
 
-func (c Lines) Run(ctx context.Context, stdio Standard[string]) error {
+func (c Lines) Run(ctx context.Context, stdio StandardIO[string]) error {
 	for _, line := range c.cat {
 		stdio.Stdout().Write([]string{line})
 	}
@@ -29,7 +33,7 @@ func (c Lines) Run(ctx context.Context, stdio Standard[string]) error {
 type CountLines struct {
 }
 
-func (c CountLines) Run(ctx context.Context, stdio Standard[string]) error {
+func (c CountLines) Run(ctx context.Context, stdio StandardIO[string]) error {
 	counter := 0
 	for {
 		var s []string = []string{""}
@@ -48,7 +52,7 @@ type Fail struct {
 	err error
 }
 
-func (c Fail) Run(context.Context, Standard[string]) error {
+func (c Fail) Run(context.Context, StandardIO[string]) error {
 	return c.err
 }
 
@@ -87,7 +91,7 @@ func Example() {
 
 	// an equivalent of cat | wc -l
 	// just using a native Go types and channels
-	err := NewPipeline[string]().Run(ctx, stdio, cat, wc)
+	err := NewLine[string]().Run(ctx, stdio, cat, wc)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -95,7 +99,7 @@ func Example() {
 	// Output: 3
 }
 
-func ExamplePipeline_pipefail() {
+func ExampleLine_pipefail() {
 	ctx := context.Background()
 	cat := Lines{
 		cat: []string{"three", "small", "pigs"},
@@ -111,15 +115,15 @@ func ExamplePipeline_pipefail() {
 	)
 
 	// an equivalent of set -o pipefail; false | cat | wc -l
-	err := NewPipeline[string]().Pipefail(true).Run(ctx, stdio, fail, cat, wc)
+	err := NewLine[string]().Pipefail(true).Run(ctx, stdio, fail, cat, wc)
 	if err == nil {
 		log.Fatal("expected err, got nil")
 	}
 	fmt.Println(err)
-	// Output: EOF
+	// Output: Error{Code: 1, Err: EOF}
 }
 
-func ExamplePipeline_nopipefail() {
+func ExampleLine_nopipefail() {
 	ctx := context.Background()
 	cat := Lines{
 		cat: []string{"three", "small", "pigs"},
@@ -135,12 +139,10 @@ func ExamplePipeline_nopipefail() {
 	)
 
 	// an equivalent of false | cat | wc -l
-	err := NewPipeline[string]().Pipefail(false).Run(ctx, stdio, fail, cat, wc)
-	if err == nil {
-		log.Fatal("expected err, got nil")
+	err := NewLine[string]().Pipefail(false).Run(ctx, stdio, fail, cat, wc)
+	if err != nil {
+		log.Fatal(err)
 	}
-	// FIXME: this does not makes much sense
-	// needs to define top-level error type
-	fmt.Println(err)
-	// Output: EOF: EOF
+	fmt.Println("OK")
+	// Output: OK
 }

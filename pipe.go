@@ -1,6 +1,8 @@
 // Copyright 2009 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// license that can be found in the LICENSE.BSD file.
+
+// Copyright 2023 Michal Vyskocil. All rights reserved.
 
 // Pipe adapter to connect code expecting an io.Reader
 // with code expecting an io.Writer.

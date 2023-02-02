@@ -1,11 +1,18 @@
-package gio
+// Copyright 2023 Michal Vyskocil. All rights reserved.
+// Use of this source code is governed by a MIT
+// license that can be found in the LICENSE file.
+
+package pipe
 
 import (
+	"errors"
 	"strings"
+
+	"github.com/gomoni/gio"
 )
 
 type nopCloseR[T any] struct {
-	r Reader[T]
+	r gio.Reader[T]
 }
 
 func (n nopCloseR[T]) Read(data []T) (int, error) {
@@ -17,7 +24,7 @@ func (nopCloseR[T]) Close() error {
 }
 
 type nopCloseW[T any] struct {
-	w Writer[T]
+	w gio.Writer[T]
 }
 
 func (n nopCloseW[T]) Write(data []T) (int, error) {
@@ -51,6 +58,9 @@ func (s errorSlice) firstNonNil() error {
 }
 
 func (s errorSlice) last() error {
+	if len(s.errs) == 0 {
+		return nil
+	}
 	return s.errs[len(s.errs)-1]
 }
 
@@ -63,4 +73,32 @@ func (s errorSlice) Error() string {
 		ret = append(ret, e.Error())
 	}
 	return strings.Join(ret, "\n")
+}
+
+func (s errorSlice) noPipefail(code int) error {
+	err := s.last()
+	if err == nil {
+		return nil
+	}
+	var pipeError Error
+	if errors.As(err, &pipeError) {
+		pipeError.Err = s
+		return pipeError
+	}
+	return NewError(code, s)
+}
+
+func (s errorSlice) pipefail(code int) error {
+	err := s.firstNonNil()
+	if err == nil {
+		return nil
+	}
+	var pipeError Error
+	if !errors.As(err, &pipeError) {
+		pipeError = NewError(code, s)
+	} else {
+		pipeError.Err = s
+	}
+
+	return pipeError
 }

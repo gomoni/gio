@@ -1,8 +1,10 @@
 # gio
 
-Generic io - forked version of stdlib's io. Works with any slice of Go types.
-Implements basic io interfaces and in-memory pipe and a unix-style pipeline.
+ * [gio](.): Generic-aware io interfaces like `gio.Reader[int]`, generic-aware in-memory pipe `gio.Pipe[string]`. Forked from Go stdlib.
+ * [gio/pipe](./pipe): Generic-aware pipeline with a standard input output streams and filters. Enable writing unix-like utilities working on top of native Go types.
+ * [gio/unix](./unix): byte stream aware pipeline with a standard input output streams and filters. Works like traditional unix tools.
 
+## Example
 
 An equivalent of `cat | wc -l` using a native Go types and channels under the hood.
 
@@ -24,9 +26,8 @@ An equivalent of `cat | wc -l` using a native Go types and channels under the ho
 
 ## TODO
 
- * split `gio` and `pipeline`?
- * figure out the error type, exit codes and so
- * add a unix specialization using type parameter `byte` making it compatible with
-   Go standard library and unix expectations about a content of stdin/stdout
  * convert gonix and gonix/sbase on top of new core
- * explore the `Transform[F, T any]` pipe
+ * os/exec helper for unix https://github.com/gomoni/gonix/blob/040661092859319d48d7664d99b1724eec64f636/pipe/exec.go
+ * use some shlex helper for implement string support `cat | wc -l` would be
+   executed by native code https://github.com/gomoni/gonix/blob/040661092859319d48d7664d99b1724eec64f636/pipe/sh.go
+ * explore the `Transform[F, T any]` option allowing type conversion
