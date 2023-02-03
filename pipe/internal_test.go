@@ -100,8 +100,15 @@ func TestErrorSlicePipeFail(t *testing.T) {
 			err := errorSlice{errs: tt.errs}.pipefail(1)
 			if tt.expected == nil {
 				require.NoError(t, err)
-			} else {
-				require.EqualError(t, err, tt.expected.Error())
+				return
+			}
+
+			require.EqualError(t, err, tt.expected.Error())
+			for _, e := range Errors(err) {
+				if e == nil {
+					continue
+				}
+				require.Contains(t, tt.errs, e)
 			}
 		})
 	}
