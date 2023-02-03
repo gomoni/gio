@@ -6,7 +6,6 @@ package pipe
 
 import (
 	"errors"
-	"strings"
 
 	"github.com/gomoni/gio"
 )
@@ -65,14 +64,7 @@ func (s errorSlice) last() error {
 }
 
 func (s errorSlice) Error() string {
-	ret := make([]string, 0, len(s.errs))
-	for _, e := range s.errs {
-		if e == nil {
-			continue
-		}
-		ret = append(ret, e.Error())
-	}
-	return strings.Join(ret, "\n")
+	return errors.Join(s.errs...).Error()
 }
 
 func (s errorSlice) noPipefail(code int) error {

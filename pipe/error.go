@@ -35,6 +35,18 @@ func (e Error) Unwrap() error {
 	return e.Err
 }
 
+// Errors returns a slice of errors if err is Error and member Err implements
+// Unwrap []error otherwise returns nil even for non-nil errors
+func Errors(err error) []error {
+
+	if Err, ok := err.(Error); ok {
+		if errs, ok := Err.Err.(interface{ Unwrap() []error }); ok {
+			return errs.Unwrap()
+		}
+	}
+	return nil
+}
+
 // NewError returns a new error with code and error inside
 func NewError(code int, err error) Error {
 	return Error{Code: code, Err: err}
