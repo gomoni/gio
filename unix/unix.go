@@ -63,7 +63,7 @@ func NewLine() Line {
 }
 
 func (p Line) Pipefail(b bool) Line {
-	return p.Pipefail(b)
+	return Line{Line: p.Line.Pipefail(b)}
 }
 
 func (p Line) Run(ctx context.Context, stdio StandardIO, filters ...Filter) error {

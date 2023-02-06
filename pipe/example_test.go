@@ -24,7 +24,10 @@ type Lines struct {
 
 func (c Lines) Run(ctx context.Context, stdio StandardIO[string]) error {
 	for _, line := range c.cat {
-		stdio.Stdout().Write([]string{line})
+		_, err := stdio.Stdout().Write([]string{line})
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -39,8 +42,8 @@ func (c CountLines) Run(ctx context.Context, stdio StandardIO[string]) error {
 		var s []string = []string{""}
 		_, err := stdio.Stdin().Read(s)
 		if errors.Is(err, io.EOF) {
-			stdio.Stdout().Write([]string{strconv.Itoa(counter)})
-			return nil
+			_, err := stdio.Stdout().Write([]string{strconv.Itoa(counter)})
+			return err
 		} else if err != nil {
 			return err
 		}
