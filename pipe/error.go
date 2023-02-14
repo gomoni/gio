@@ -31,9 +31,11 @@ func (e Error) Error() string {
 	return fmt.Sprintf("Error{Code: %d, Err: %+v}", e.Code, e.Err)
 }
 
+/*
 func (e Error) Unwrap() error {
-	return e.Err
+	return e
 }
+*/
 
 // Errors returns a slice of errors if err is Error and member Err implements
 // Unwrap []error otherwise returns nil even for non-nil errors
@@ -59,22 +61,30 @@ func NewErrorf(code int, format string, args ...any) Error {
 
 // FromError unpacks error into Error. If it can't be unpacked, it assigns code 250
 // error fs.ErrPermission will get code NotExecutable (126)
-// error exec.ErrNotFound will get code NotFound (code 127)
+// error exec.ErrNotFound will get code NotFound (127)
+// *exec.ExitError will be converted to Error with Code: ExitCode
+// Error will be returned unchanged
+// all other error (including nil) will be returned with code UnknownError
 func FromError(x error) Error {
 	if errors.Is(x, exec.ErrNotFound) {
-		return Error{Code: NotFound, Err: x}
+		return NewError(NotFound, x)
 	}
 
 	var fsErr *fs.PathError
 	if errors.As(x, &fsErr) {
 		if fsErr.Op == "fork/exec" && errors.Is(fsErr.Err, fs.ErrPermission) {
-			return Error{Code: NotExecutable, Err: x}
+			return NewError(NotExecutable, x)
 		}
+	}
+
+	var exitErr *exec.ExitError
+	if errors.As(x, &exitErr) {
+		return NewError(exitErr.ExitCode(), exitErr)
 	}
 
 	var err Error
 	if !errors.As(x, &err) {
-		return Error{Code: UnknownError, Err: x}
+		return NewError(UnknownError, x)
 	}
 	return err
 }
