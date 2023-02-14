@@ -16,7 +16,7 @@ An equivalent of `cat | wc -l` using a native Go types and channels under the ho
 		os.Stderr,
 	)
 
-	err := NewPipeline[string]().Run(ctx, stdio, cat, wc)
+	err := pipe.NewLine[string]().Run(ctx, stdio, cat, wc)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -24,11 +24,25 @@ An equivalent of `cat | wc -l` using a native Go types and channels under the ho
 	// Output: 3
 ```
 
+## os/exec wrapper
+
+`gio/unix` has a `*exec.Cmd` wrapper allowing to run any system command as a Filter
+
+```
+	stdout := bytes.NewBuffer(nil)
+	stdio := unix.NewStdio(
+		nil,
+		stdout,
+		os.Stderr,
+	)
+
+	cmd := unix.NewCmd(exec.Command("go", "version"))
+	err := cmd.Run(ctx, stdio)
+	fmt.Println(out.String())
+	// Output: go version 1.20 linux/amd64
+```
+
+
 ## TODO
 
- * rework errors on top of go 1.20 ones
- * convert gonix and gonix/sbase on top of new core
- * os/exec helper for unix https://github.com/gomoni/gonix/blob/040661092859319d48d7664d99b1724eec64f636/pipe/exec.go
- * use some shlex helper for implement string support `cat | wc -l` would be
-   executed by native code https://github.com/gomoni/gonix/blob/040661092859319d48d7664d99b1724eec64f636/pipe/sh.go
  * explore the `Transform[F, T any]` option allowing type conversion
