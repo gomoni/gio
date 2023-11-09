@@ -1,3 +1,4 @@
+moved to https://codeberg.org/gonix/gio
 # gio
 
  * [gio](.): Generic-aware io interfaces like `gio.Reader[int]`, generic-aware in-memory pipe `gio.Pipe[string]`. Forked from Go stdlib.
